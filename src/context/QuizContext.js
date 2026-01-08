@@ -108,6 +108,13 @@ export function QuizProvider({ children }) {
   const startQuiz = async (userEmail) => {
     setEmail(userEmail);
     localStorage.setItem('quiz_user_email', userEmail);
+    
+    // Reset state immediately to prevent redirect loops when navigating
+    setIsFinished(false);
+    setAnswers({});
+    setCurrentQuestionIndex(0);
+    setVisited(new Set([0]));
+    
     await fetchQuestions();
   };
 
