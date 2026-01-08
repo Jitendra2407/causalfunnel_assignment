@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# CausalFunnel Quiz Application
 
-## Getting Started
+A robust, responsive, and interactive Quiz Application built with **Next.js**. This application allows users to take a timed quiz with questions fetched dynamically from an external API, track their progress, and view a detailed performance report.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*   **Dynamic Data**: Fetches 15 random questions from the [OpenTDB API](https://opentdb.com/).
+*   **Timed Quiz**: Integrated 30-minute countdown timer with auto-submit functionality.
+*   **Interactive Navigation**: 
+    *   Jump to any question via the Navigation Panel.
+    *   Visual indicators for **Visited**, **Attempted**, and **Current** questions.
+*   **State Management**: 
+    *   Persists user session (email) via LocalStorage.
+    *   Global state management (Answers, Timer, Progress) using React Context API.
+*   **Responsive Design**: Optimized for both Desktop and Mobile devices.
+*   **Smooth UX**: Animated transitions and intuitive UI.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+*   **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+*   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+*   **State Management**: React Context API
+*   **API**: [Open Trivia DB (OpenTDB)](https://opentdb.com/)
+*   **Language**: JavaScript (ES6+)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Getting Started
 
-## Learn More
+Follow these instructions to set up the project locally.
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
+*   Node.js (v18 or higher recommended)
+*   npm or yarn
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/Jitendra2407/causalfunnel_assignment.git
+    cd causalfunnel_assignment
+    ```
 
-## Deploy on Vercel
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4.  **Open the application**
+    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🏗️ Architecture
+
+The project follows a modular structure using the Next.js App Router:
+
+*   **`src/app/`**: Routes (Pages)
+    *   `page.js`: Start page (Email capture).
+    *   `quiz/page.js`: Main game loop (Timer, Questions, Nav).
+    *   `report/page.js`: Results and score analysis.
+*   **`src/components/`**: Reusable UI components.
+    *   `quiz/`: Specialized components (`Timer`, `QuestionCard`, `NavPanel`).
+    *   `ui/`: Generic components (`Button`, `Input`).
+*   **`src/context/`**: Global State (`QuizContext`) handling logic for scoring, timer, and API fetching.
+
+## 📝 Assumptions
+
+1.  **API Availability**: The application relies on OpenTDB. If the API is down, an error message is displayed with a "Retry" option.
+2.  **User Identity**: Email is used as the primary identifier for the session. It is stored in `localStorage` to allow page refreshes without losing the session context (though quiz progress resets on full refresh to prevent cheating, the user doesn't need to re-login).
+3.  **Single Choice**: Questions are multiple-choice with a single correct answer.
+
+## 🧩 Challenges & Solutions
+
+*   **Challenge**: The OpenTDB API returns HTML entities (e.g., `&quot;`) in the text.
+    *   **Solution**: Implemented a `decodeHTML` utility function using a temporary DOM element (or a robust regex approach) to sanitize text before display.
+
+*   **Challenge**: Handling Page Refreshes.
+    *   **Solution**: Since state is in-memory (Context), a refresh clears the questions. Added a guard in `QuizPage` to detect "Active Session but Empty Questions" which triggers an automatic re-fetch, ensuring the user isn't stuck on a blank screen.
+
+*   **Challenge**: "Visited" vs "Attempted" Logic.
+    *   **Solution**: Used a `Set` for `visited` indices (updated via `useEffect` on question change) and a key-value map for `answers` to track attempted questions.
+
+---
+**Author**: Candidate

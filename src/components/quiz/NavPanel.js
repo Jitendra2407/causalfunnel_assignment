@@ -4,20 +4,28 @@ import React from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import Button from '@/components/ui/Button';
 
+
+/**
+ * Navigation Panel Component
+ * Displays a grid of question numbers allowing users to:
+ * 1. Jump to specific questions
+ * 2. See the status of each question (Current, Visited, Answered)
+ */
 export default function NavPanel() {
   const { questions, currentQuestionIndex, jumpToQuestion, answers, visited } = useQuiz();
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg h-fit max-w-xs w-full">
+    // Responsive: Full width on mobile/tablet, fixed width sidebar on large screens
+    <div className="bg-white p-6 rounded-2xl shadow-lg h-fit w-full lg:max-w-xs">
       <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Questions</h3>
-      <div className="grid grid-cols-4 gap-3">
+      
+      <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-4 gap-3">
         {questions.map((q, idx) => {
           const isCurrent = idx === currentQuestionIndex;
           const isAnswered = answers[q.id] !== undefined;
           const isVisited = visited.has(idx);
 
-          // Determine styling
-          let variant = 'outline'; // Default unvisited
+          // Determine styling based on state priority: Current > Answered > Visited > Default
           let className = "w-10 h-10 p-0 flex items-center justify-center font-semibold text-sm";
           
           if (isCurrent) {
@@ -36,6 +44,8 @@ export default function NavPanel() {
               onClick={() => jumpToQuestion(idx)}
               className={`rounded-lg transition-all duration-200 ${className}`}
               title={`Question ${idx + 1}`}
+              aria-label={`Go to question ${idx + 1}`}
+              aria-current={isCurrent ? 'step' : undefined}
             >
               {idx + 1}
             </button>
@@ -43,7 +53,8 @@ export default function NavPanel() {
         })}
       </div>
       
-      <div className="mt-6 flex flex-col gap-2 text-xs text-gray-500">
+      {/* Legend / Key */}
+      <div className="mt-6 flex flex-wrap gap-4 text-xs text-gray-500">
         <div className="flex items-center gap-2">
             <span className="w-3 h-3 bg-blue-600 rounded-full"></span> Answered
         </div>

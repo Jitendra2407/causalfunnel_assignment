@@ -4,6 +4,16 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const QuizContext = createContext();
 
+
+/**
+ * QuizContext
+ * Global state manager for the application.
+ * Handles:
+ * - User session (email)
+ * - Questions data fetching and formatting
+ * - Quiz progress (current question, answers, visited/attempted status)
+ * - Timer state and Auto-submit logic
+ */
 export function QuizProvider({ children }) {
   // User Data
   const [email, setEmail] = useState('');
@@ -15,32 +25,40 @@ export function QuizProvider({ children }) {
 
   // Quiz State
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({}); // { questionId: selectedOption }
-  const [visited, setVisited] = useState(new Set([0]));
+  const [answers, setAnswers] = useState({}); // Map: { questionId: selectedOption }
+  const [visited, setVisited] = useState(new Set([0])); // Set: { questionIndex }
   const [isFinished, setIsFinished] = useState(false);
   
   // Timer State (30 mins = 1800 seconds)
   const [timeRemaining, setTimeRemaining] = useState(1800);
 
-  // Initialize from localStorage
+  // Initialize from localStorage for session persistence
   useEffect(() => {
     const savedEmail = localStorage.getItem('quiz_user_email');
     if (savedEmail) setEmail(savedEmail);
   }, []);
 
+  // Track visited questions to update UI
   useEffect(() => {
     if (questions.length > 0) {
        setVisited(prev => new Set(prev).add(currentQuestionIndex));
     }
   }, [currentQuestionIndex, questions.length]);
 
-  // Helper to decode HTML entities from API
+  // Helper to decode HTML entities from API response (e.g. &quot; -> ")
   const decodeHTML = (html) => {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
     return txt.value;
   };
 
+  /**
+   * Fetches 15 questions from OpenTDB API.
+   * Transforms raw data:
+   * 1. Decodes HTML entities
+   * 2. Combines Correct + Incorrect answers
+   * 3. Shuffles options for randomness
+   */
   const fetchQuestions = async () => {
     setLoading(true);
     setError(null);
@@ -53,14 +71,14 @@ export function QuizProvider({ children }) {
         const formattedQuestions = data.results.map((q, index) => {
           // Combine and shuffle options
           const allOptions = [...q.incorrect_answers, q.correct_answer];
-          // Simple shuffle
+          // Simple random shuffle
           const shuffledOptions = allOptions
              .map(value => ({ value, sort: Math.random() }))
              .sort((a, b) => a.sort - b.sort)
              .map(({ value }) => decodeHTML(value));
 
           return {
-            id: index, // OpenTDB doesn't usually return IDs, so using index
+            id: index, // Use index as ID since API returns dynamic questions
             question: decodeHTML(q.question),
             options: shuffledOptions,
             answer: decodeHTML(q.correct_answer),
@@ -70,7 +88,7 @@ export function QuizProvider({ children }) {
           };
         });
         setQuestions(formattedQuestions);
-        // Ensure state is ready for start
+        // Reset/Initialize Quiz State
         setCurrentQuestionIndex(0);
         setAnswers({});
         setVisited(new Set([0]));
@@ -122,7 +140,7 @@ export function QuizProvider({ children }) {
     submitAnswer,
     jumpToQuestion,
     finishQuiz,
-    fetchQuestions // exported purely for retry capability if needed
+    fetchQuestions
   };
 
   return (

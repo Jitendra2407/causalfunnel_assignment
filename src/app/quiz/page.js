@@ -14,10 +14,14 @@ export default function QuizPage() {
 
   // Redirect to start if no email
   useEffect(() => {
-    if (!localStorage.getItem('quiz_user_email')) {
+    const savedEmail = localStorage.getItem('quiz_user_email');
+    if (!savedEmail) {
       router.replace('/');
+    } else if (questions.length === 0 && !loading && !error) {
+      // Trigger fetch if we have email but no questions (page refresh)
+      fetchQuestions();
     }
-  }, [router]);
+  }, [router, questions.length, loading, error, fetchQuestions]);
 
   // Redirect to report if finished
   useEffect(() => {
@@ -26,7 +30,8 @@ export default function QuizPage() {
     }
   }, [isFinished, router]);
 
-  if (!email && typeof window !== 'undefined' && !localStorage.getItem('quiz_user_email')) {
+  // Initial check for localStorage to avoid flash
+  if (typeof window !== 'undefined' && !localStorage.getItem('quiz_user_email')) {
     return null; 
   }
 
@@ -64,18 +69,23 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 md:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm">
-          <div className="flex flex-col">
-            <span className="text-gray-500 text-sm">Candidate</span>
-            <span className="font-semibold text-gray-800">{email || localStorage.getItem('quiz_user_email')}</span>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 md:mb-8 bg-white p-4 rounded-xl shadow-sm">
+          <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
+            <span className="text-gray-500 text-xs md:text-sm uppercase tracking-wide">Candidate</span>
+            <span className="font-semibold text-gray-800 text-sm md:text-base truncate max-w-[200px]">
+                {email || localStorage.getItem('quiz_user_email')}
+            </span>
           </div>
-          <Timer />
-          <Button onClick={finishQuiz} variant="primary" className="bg-red-600 hover:bg-red-700">
-            Submit Quiz
-          </Button>
+          
+          <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+             <Timer />
+             <Button onClick={finishQuiz} variant="primary" className="bg-red-600 hover:bg-red-700 text-sm md:text-base px-3 md:px-6 whitespace-nowrap">
+                Submit Quiz
+             </Button>
+          </div>
         </div>
 
         {/* Main Content */}
