@@ -7,9 +7,11 @@ import Button from '@/components/ui/Button';
 
 /**
  * Navigation Panel Component
- * Displays a grid of question numbers allowing users to:
- * 1. Jump to specific questions
- * 2. See the status of each question (Current, Visited, Answered)
+ * 
+ * Think of this as the map for the quiz. 🗺️
+ * Displays a grid of question numbers so users can:
+ * 1. Jump around to any question they want.
+ * 2. See at a glance which questions they've done, skipped, or visited.
  */
 export default function NavPanel() {
   const { questions, currentQuestionIndex, jumpToQuestion, answers, visited } = useQuiz();
@@ -25,10 +27,13 @@ export default function NavPanel() {
           const isAnswered = answers[q.id] !== undefined;
           const isVisited = visited.has(idx);
 
-          // Determine styling based on state priority: Current > Answered > Visited > Default
+          // Color Coding Logic 🎨
+          // We decide the button's look based on the question's state.
+          // Priority: Current > Answered > Visited > Default
           let className = "w-10 h-10 p-0 flex items-center justify-center font-semibold text-sm";
           
           if (isCurrent) {
+            // Blue Ring for current
             className += " border-2 border-blue-600 bg-blue-50 text-blue-800 ring-2 ring-blue-300 ring-offset-1";
           } else if (isAnswered) {
              className += " bg-blue-600 text-white border-blue-600 hover:bg-blue-700";

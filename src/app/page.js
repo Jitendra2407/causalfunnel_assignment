@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
+/**
+ * The Starting Line! 🏁
+ * This is the first page users see. It captures their email to start the session.
+ */
 export default function StartPage() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
+  // Simple email validation regex. 
+  // We want to make sure the user inputs a proper email before starting!
   const validateEmail = (email) => {
     return String(email)
       .toLowerCase()

@@ -5,6 +5,8 @@ import { useQuiz } from '@/context/QuizContext';
 import Button from '@/components/ui/Button';
 
 export default function QuestionCard() {
+  // Grab everything we need from our global state
+  // We don't need to pass props because the Context handles it all!
   const { 
     questions, 
     currentQuestionIndex, 

@@ -7,12 +7,15 @@ const QuizContext = createContext();
 
 /**
  * QuizContext
- * Global state manager for the application.
- * Handles:
- * - User session (email)
- * - Questions data fetching and formatting
- * - Quiz progress (current question, answers, visited/attempted status)
- * - Timer state and Auto-submit logic
+ * 
+ * This is the central brain of our application! 🧠
+ * It manages the entire global state so we don't have to pass props down a million levels.
+ * 
+ * What it handles:
+ * - 👤 User Session: Keeps track of who's taking the quiz (email).
+ * - ❓ Questions: Fetches and stores the trivia questions from the API.
+ * - 📝 Progress: Tracks which question the user is on, their answers, and which ones they've visited.
+ * - ⏳ Timer: Manages the countdown so the user knows how much time is left.
  */
 export function QuizProvider({ children }) {
   // User Data
@@ -25,7 +28,9 @@ export function QuizProvider({ children }) {
 
   // Quiz State
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({}); // Map: { questionId: selectedOption }
+  // Stores the user's selected answers. Map: { questionId: selectedOption }
+  // We use a map for O(1) lookups when checking if a question is answered.
+  const [answers, setAnswers] = useState({});
   const [visited, setVisited] = useState(new Set([0])); // Set: { questionIndex }
   const [isFinished, setIsFinished] = useState(false);
   
@@ -71,7 +76,8 @@ export function QuizProvider({ children }) {
         const formattedQuestions = data.results.map((q, index) => {
           // Combine and shuffle options
           const allOptions = [...q.incorrect_answers, q.correct_answer];
-          // Simple random shuffle
+          // Shuffle options so the correct answer isn't always in the same spot!
+          // We assign a random sort value to each option and then sort based on that.
           const shuffledOptions = allOptions
              .map(value => ({ value, sort: Math.random() }))
              .sort((a, b) => a.sort - b.sort)
@@ -109,7 +115,8 @@ export function QuizProvider({ children }) {
     setEmail(userEmail);
     localStorage.setItem('quiz_user_email', userEmail);
     
-    // Reset state immediately to prevent redirect loops when navigating
+    // Reset everything! New user = fresh start.
+    // We do this immediately to ensure the UI is clean before we start fetching.
     setIsFinished(false);
     setAnswers({});
     setCurrentQuestionIndex(0);

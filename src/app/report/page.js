@@ -5,18 +5,24 @@ import { useRouter } from 'next/navigation';
 import { useQuiz } from '@/context/QuizContext';
 import Button from '@/components/ui/Button';
 
+/**
+ * The Finish Line! 🏆
+ * Displays the user's score and a detailed breakdown of their answers.
+ */
 export default function ReportPage() {
   const { questions, answers, email, isFinished, startQuiz } = useQuiz();
   const router = useRouter();
 
   useEffect(() => {
-    // If trying to access report without finishing (or fresh load), redirect home
+    // Security Check 🔒
+    // If the user hasn't actually finished the quiz (or refreshing the page),
+    // kick them back to the start so they don't cheat or see empty data!
     if (!isFinished && !Object.keys(answers).length) {
       router.replace('/');
     }
   }, [isFinished, answers, router]);
 
-  // Calculate Score
+  // Tally up the score! 💯
   let score = 0;
   questions.forEach(q => {
     if (answers[q.id] === q.answer) {

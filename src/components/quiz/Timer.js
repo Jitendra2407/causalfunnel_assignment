@@ -9,6 +9,8 @@ export default function Timer() {
   useEffect(() => {
     if (isFinished) return;
     
+    // Tick Tock! ⏰
+    // We set up a simple interval to countdown every second.
     // Prevent multiple intervals if mounting/unmounting
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
