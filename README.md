@@ -1,37 +1,37 @@
-# CausalFunnel Quiz Application
+# CausalFunnel Quiz Application 🧠
 
-A robust, responsive, and interactive Quiz Application built with **Next.js**. This application allows users to take a timed quiz with questions fetched dynamically from an external API, track their progress, and view a detailed performance report.
+A professional, robust, and responsive Quiz Application built with **Next.js**. This project was developed as part of the CausalFunnel Software Engineer Intern assessment. It demonstrates modern web development practices, including dynamic data fetching, complex state management, and user-centric design.
 
-## 🚀 Features
+## 🚀 Features & Highlights
 
-*   **Dynamic Data**: Fetches 15 random questions from the [OpenTDB API](https://opentdb.com/).
-*   **Timed Quiz**: Integrated 30-minute countdown timer with auto-submit functionality.
-*   **Interactive Navigation**: 
-    *   Jump to any question via the Navigation Panel.
-    *   Visual indicators for **Visited**, **Attempted**, and **Current** questions.
-*   **State Management**: 
-    *   Persists user session (email) via LocalStorage.
-    *   Global state management (Answers, Timer, Progress) using React Context API.
-*   **Responsive Design**: Optimized for both Desktop and Mobile devices.
-*   **Smooth UX**: Animated transitions and intuitive UI.
+### Core Requirements
+*   **Start Page**: Clean interface for users to enter their email and begin the session.
+*   **Dynamic Questions**: Fetches 15 random questions from the [OpenTDB API](https://opentdb.com/), ensuring a new challenge every time.
+*   **Timer System**: Integrated 30-minute countdown timer that automatically submits the quiz when time runs out. ⏳
+*   **Smart Navigation**: 
+    *   **Jump & Skip**: Users can navigate to any question at any time using the Navigation Panel.
+    *   **Visual Tracking**: Color-coded indicators show exactly which questions are **Current**, **Visited**, and **Attempted**.
+*   **Performance Report**: Detailed end-of-game report comparing user answers side-by-side with correct answers.
+*   **Clean Code**: Modular architecture with descriptive comments and type-safe practices.
+
+### 🌟 Bonus Features Check
+*   **Device Adaptability**: Fully responsive design that looks great on Mobile 📱, Tablet 📲, and Desktop 💻.
+*   **Smooth Animations**: Implemented subtle fade-in transitions for questions and interactive hover effects.
+*   **🛡️ Session Persistence (Anti-Cheat / Resilience)**: 
+    *   **Robust Data Saving**: Quiz state (answers, time remaining, current question) is real-time saved to `localStorage`.
+    *   **Refresh Protection**: If a user accidentally reloads the page (or closes the tab), they can jump right back in exactly where they left off! No lost progress.
 
 ## 🛠️ Tech Stack
 
 *   **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
 *   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-*   **State Management**: React Context API
-*   **API**: [Open Trivia DB (OpenTDB)](https://opentdb.com/)
-*   **Language**: JavaScript (ES6+)
+*   **State Management**: React Context API + LocalStorage
+*   **Languages**: JavaScript (ES6+)
+*   **Tools**: ESLint for code quality
 
-## 📦 Getting Started
+## 📦 Setup & Installation
 
-Follow these instructions to set up the project locally.
-
-### Prerequisites
-*   Node.js (v18 or higher recommended)
-*   npm or yarn
-
-### Installation
+Follow these steps to get the application running on your local machine:
 
 1.  **Clone the repository**
     ```bash
@@ -42,6 +42,8 @@ Follow these instructions to set up the project locally.
 2.  **Install dependencies**
     ```bash
     npm install
+    # or
+    yarn install
     ```
 
 3.  **Run the development server**
@@ -50,37 +52,29 @@ Follow these instructions to set up the project locally.
     ```
 
 4.  **Open the application**
-    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🏗️ Architecture
-
-The project follows a modular structure using the Next.js App Router:
-
-*   **`src/app/`**: Routes (Pages)
-    *   `page.js`: Start page (Email capture).
-    *   `quiz/page.js`: Main game loop (Timer, Questions, Nav).
-    *   `report/page.js`: Results and score analysis.
-*   **`src/components/`**: Reusable UI components.
-    *   `quiz/`: Specialized components (`Timer`, `QuestionCard`, `NavPanel`).
-    *   `ui/`: Generic components (`Button`, `Input`).
-*   **`src/context/`**: Global State (`QuizContext`) handling logic for scoring, timer, and API fetching.
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📝 Assumptions
 
-1.  **API Availability**: The application relies on OpenTDB. If the API is down, an error message is displayed with a "Retry" option.
-2.  **User Identity**: Email is used as the primary identifier for the session. It is stored in `localStorage` to allow page refreshes without losing the session context (though quiz progress resets on full refresh to prevent cheating, the user doesn't need to re-login).
-3.  **Single Choice**: Questions are multiple-choice with a single correct answer.
+1.  **Internet Connection**: The application relies on the external OpenTDB API. An active internet connection is required to fetch questions.
+2.  **Browser Support**: The application is optimized for modern evergreen browsers (Chrome, Firefox, Safari, Edge).
+3.  **API Rate Limits**: We assume the API is available. Basic error handling is implemented to allow users to "Retry" if the fetch fails.
 
 ## 🧩 Challenges & Solutions
 
-*   **Challenge**: The OpenTDB API returns HTML entities (e.g., `&quot;`) in the text.
-    *   **Solution**: Implemented a `decodeHTML` utility function using a temporary DOM element (or a robust regex approach) to sanitize text before display.
+### 1. Handling HTML Entities in API Data
+**Challenge**: The OpenTDB API returns raw HTML entities (e.g., `&quot;`, `&#039;`) in the JSON response.
+**Solution**: I implemented a utility function `decodeHTML` that uses a temporary DOM element to accurately parse and decode these entities before rendering, ensuring clean text for the user.
 
-*   **Challenge**: Handling Page Refreshes.
-    *   **Solution**: Since state is in-memory (Context), a refresh clears the questions. Added a guard in `QuizPage` to detect "Active Session but Empty Questions" which triggers an automatic re-fetch, ensuring the user isn't stuck on a blank screen.
+### 2. Session Persistence & Race Conditions
+**Challenge**: Implementing a robust "Resume Quiz" feature that survives a page refresh. A race condition occurred where the app would try to fetch new questions *before* the saved session data was fully restored from LocalStorage.
+**Solution**: 
+*   Implemented a coordinated `initializing` state in `QuizContext`.
+*   The `QuizPage` now waits for the Context to signal that the storage check is complete before deciding whether to load existing data or fetch new questions. This ensures a seamless "pick up where you left off" experience.
 
-*   **Challenge**: "Visited" vs "Attempted" Logic.
-    *   **Solution**: Used a `Set` for `visited` indices (updated via `useEffect` on question change) and a key-value map for `answers` to track attempted questions.
+### 3. State Complexity
+**Challenge**: Managing multiple moving parts (timer, visited set, answers map, current index) without prop drilling.
+**Solution**: Centralized logic in `QuizContext`. Used a `Set` for efficient lookups of visited questions and a `Map` (object) for answers to handle sparse updates easily.
 
 ---
-**Author**: Candidate
+**Submission for CausalFunnel Interview Process**
