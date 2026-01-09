@@ -25,6 +25,8 @@ export function QuizProvider({ children }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Add initializing state to block UI/logic until restore is done
+  const [initializing, setInitializing] = useState(true);
 
   // Quiz State
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -39,9 +41,46 @@ export function QuizProvider({ children }) {
 
   // Initialize from localStorage for session persistence
   useEffect(() => {
+    // 1. Restore User Session
     const savedEmail = localStorage.getItem('quiz_user_email');
     if (savedEmail) setEmail(savedEmail);
+
+    // 2. Restore Quiz State (Anti-Cheat / Persistence) 🛡️
+    const savedState = localStorage.getItem('quiz_state');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        setQuestions(parsedState.questions || []);
+        setCurrentQuestionIndex(parsedState.currentQuestionIndex || 0);
+        setAnswers(parsedState.answers || {});
+        // Convert array back to Set for 'visited'
+        setVisited(new Set(parsedState.visited || [0]));
+        setTimeRemaining(parsedState.timeRemaining || 1800);
+        setIsFinished(parsedState.isFinished || false);
+      } catch (e) {
+        console.error("Failed to parse saved quiz state", e);
+        // If state is corrupt, maybe clear it? For now, just log.
+      }
+    }
+    // Done initializing! 🚀
+    setInitializing(false);
   }, []);
+
+  // Save Quiz State to localStorage whenever it changes 💾
+  useEffect(() => {
+    // Only save if we actually have questions (i.e., quiz has started)
+    if (questions.length > 0) {
+      const stateToSave = {
+        questions,
+        currentQuestionIndex,
+        answers,
+        visited: Array.from(visited), // Sets aren't JSON-serializable by default!
+        timeRemaining,
+        isFinished
+      };
+      localStorage.setItem('quiz_state', JSON.stringify(stateToSave));
+    }
+  }, [questions, currentQuestionIndex, answers, visited, timeRemaining, isFinished]);
 
   // Track visited questions to update UI
   useEffect(() => {
@@ -114,6 +153,7 @@ export function QuizProvider({ children }) {
   const startQuiz = async (userEmail) => {
     setEmail(userEmail);
     localStorage.setItem('quiz_user_email', userEmail);
+    localStorage.removeItem('quiz_state'); // Clear any old session data!
     
     // Reset everything! New user = fresh start.
     // We do this immediately to ensure the UI is clean before we start fetching.
@@ -143,6 +183,7 @@ export function QuizProvider({ children }) {
     questions,
     loading,
     error,
+    initializing, // Expose this!
     email,
     currentQuestionIndex,
     answers,

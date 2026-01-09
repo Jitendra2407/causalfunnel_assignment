@@ -9,19 +9,24 @@ import QuestionCard from '@/components/quiz/QuestionCard';
 import Button from '@/components/ui/Button';
 
 export default function QuizPage() {
-  const { email, isFinished, finishQuiz, loading, error, questions, fetchQuestions } = useQuiz();
+  const { email, isFinished, finishQuiz, loading, error, questions, fetchQuestions, initializing } = useQuiz();
   const router = useRouter();
 
   // Redirect to start if no email
+  // Redirect to start if no email
   useEffect(() => {
+    // Wait for context to restore before making decisions
+    if (initializing) return;
+
     const savedEmail = localStorage.getItem('quiz_user_email');
     if (!savedEmail) {
       router.replace('/');
     } else if (questions.length === 0 && !loading && !error) {
       // Trigger fetch if we have email but no questions (page refresh)
+      // AND we are sure we didn't just restore nothing.
       fetchQuestions();
     }
-  }, [router, questions.length, loading, error, fetchQuestions]);
+  }, [router, questions.length, loading, error, fetchQuestions, initializing]);
 
   // Redirect to report if finished
   useEffect(() => {
@@ -35,12 +40,15 @@ export default function QuizPage() {
     return null; 
   }
 
-  if (loading) {
+  // Show loading while fetching OR initializing/restoring
+  if (loading || initializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-700">Loading Quiz...</h2>
+            <h2 className="text-xl font-semibold text-gray-700">
+              {initializing ? 'Restoring Session...' : 'Loading Quiz...'}
+            </h2>
         </div>
       </div>
     );
